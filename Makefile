@@ -5,13 +5,23 @@ OPENCV_PATH=/usr/local
 CC=
 CXX=g++
 
+# Platform
+PLATFORM=$(shell uname)
+
 # Flags
-ARCH_FLAGS=-arch x86_64
-CFLAGS=-Wextra -Wall -pedantic-errors $(ARCH_FLAGS) -O3 -Wno-long-long
+ifeq ($(findstring Linux,$(PLATFORM)),Linux)
+	ARCH_FLAGS=-m64
+	INCLUDES=`pkg-config --cflags opencv`
+	LIBRARIES=`pkg-config --libs opencv`
+else
+	ARCH_FLAGS=-arch x86_64
+	INCLUDES=-I$(OPENCV_PATH)/include
+	LIBRARIES=-L$(OPENCV_PATH)/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
+endif
+CFLAGS=-fPIC -Wextra -Wall -pedantic-errors $(ARCH_FLAGS) -O3 -Wno-long-long
 LDFLAGS=$(ARCH_FLAGS)
+INCLUDES += -Iinclude/
 DEFINES=
-INCLUDES=-I$(OPENCV_PATH)/include -Iinclude/
-LIBRARIES=-L$(OPENCV_PATH)/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
 
 # Files which require compiling
 SOURCE_FILES=\
@@ -43,12 +53,12 @@ all: bin/face_tracker
 	@# Make dependecy file
 	$(CXX) -MM -MT $@ -MF $(patsubst %.cc,%.d,$<) $(CFLAGS) $(DEFINES) $(INCLUDES) $<
 	@# Compile
-	$(CXX) $(CFLAGS) $(DEFINES) $(INCLUDES) -c -o $@ $< 
+	$(CXX) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
 -include $(DEPENDENCY_FILES)
 
 bin/face_tracker: $(ALL_OBJECTS)
-	$(CXX) $(LDFLAGS) $(LIBRARIES) -o $@ $(ALL_OBJECTS)
+	$(CXX) $(LDFLAGS) $^ $(LIBRARIES) -o $@
 
 .PHONY: clean
 clean:
