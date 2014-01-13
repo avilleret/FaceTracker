@@ -14,7 +14,7 @@ ifeq ($(findstring Linux,$(PLATFORM)),Linux)
 	INCLUDES=`pkg-config --cflags opencv`
 	LIBRARIES=`pkg-config --libs opencv`
 else
-	ARCH_FLAGS=-arch x86_64
+	ARCH_FLAGS=-arch i386
 	INCLUDES=-I$(OPENCV_PATH)/include
 	LIBRARIES=-L$(OPENCV_PATH)/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
 endif
