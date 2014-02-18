@@ -7,10 +7,13 @@ CXX=g++
 
 # Platform
 PLATFORM=$(shell uname)
+OS=$(shell uname -i)
 
 # Flags
 ifeq ($(findstring Linux,$(PLATFORM)),Linux)
+  ifeq ($(OS), x86_64)
 	ARCH_FLAGS=-m64
+  endif
 	INCLUDES=`pkg-config --cflags opencv`
 	LIBRARIES=`pkg-config --libs opencv`
 else
