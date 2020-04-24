@@ -37,7 +37,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///////////////////////////////////////////////////////////////////////////////
-#include <PAW.h>
+#include <FaceTracker/PAW.h>
+#include <opencv2/imgproc.hpp>
 #define it at<int>
 #define db at<double>
 using namespace FACETRACKER;
@@ -164,7 +165,7 @@ void PAW::Crop(cv::Mat &src, cv::Mat &dst, cv::Mat &s)
   assert((s.type() == CV_64F) && (s.rows == _src.rows) && (s.cols == 1) && 
 	 (src.type() == dst.type()));
   _dst = s; this->CalcCoeff(); this->WarpRegion(_mapx,_mapy);
-  cv::remap(src,dst,_mapx,_mapy,CV_INTER_LINEAR); return;
+  cv::remap(src,dst,_mapx,_mapy,cv::INTER_LINEAR); return;
 }
 //=============================================================================
 void PAW::CalcCoeff()

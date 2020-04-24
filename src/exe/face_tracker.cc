@@ -37,16 +37,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///////////////////////////////////////////////////////////////////////////////
-#include <Tracker.h>
-#include <opencv/highgui.h>
+#include <FaceTracker/Tracker.h>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 #include <iostream>
 //=============================================================================
 void Draw(cv::Mat &image,cv::Mat &shape,cv::Mat &con,cv::Mat &tri,cv::Mat &visi)
 {
-  int i,n = shape.rows/2; cv::Point p1,p2; cv::Scalar c;
+  int i,n = shape.rows/2; cv::Point p1,p2; cv::Scalar c{};
 
   //draw triangulation
-  c = CV_RGB(0,0,0);
   for(i = 0; i < tri.rows; i++){
     if(visi.at<int>(tri.at<int>(i,0),0) == 0 ||
        visi.at<int>(tri.at<int>(i,1),0) == 0 ||
@@ -174,9 +175,12 @@ int main(int argc, const char** argv)
   
   //initialize camera and display window
   cv::Mat frame,gray,im; double fps=0; char sss[256]; std::string text; 
-  CvCapture* camera = cvCreateCameraCapture(CV_CAP_ANY); if(!camera)return -1;
-  int64 t1,t0 = cvGetTickCount(); int fnum=0;
-  cvNamedWindow("Face Tracker",1);
+  cv::VideoCapture cap;
+
+  if(!cap.open(0)) return -1;
+
+  int64 t1,t0 = cv::getTickCount(); int fnum=0;
+  cv::namedWindow("Face Tracker",1);
   std::cout << "Hot keys: "        << std::endl
 	    << "\t ESC - quit"     << std::endl
 	    << "\t d   - Redetect" << std::endl;
@@ -185,10 +189,11 @@ int main(int argc, const char** argv)
   bool failed = true;
   while(1){ 
     //grab image, resize and flip
-    IplImage* I = cvQueryFrame(camera); if(!I)continue; frame = I;
+    cap >> frame;
+    if(frame.empty()) continue;
     if(scale == 1)im = frame; 
     else cv::resize(frame,im,cv::Size(scale*frame.cols,scale*frame.rows));
-    cv::flip(im,im,1); cv::cvtColor(im,gray,CV_BGR2GRAY);
+    cv::flip(im,im,1); cv::cvtColor(im,gray,cv::COLOR_BGR2GRAY);
 
     //track this image
     std::vector<int> wSize; if(failed)wSize = wSize2; else wSize = wSize1; 
@@ -196,23 +201,23 @@ int main(int argc, const char** argv)
       int idx = model._clm.GetViewIdx(); failed = false;
       Draw(im,model._shape,con,tri,model._clm._visi[idx]); 
     }else{
-      if(show){cv::Mat R(im,cvRect(0,0,150,50)); R = cv::Scalar(0,0,255);}
+      if(show){cv::Mat R(im,cv::Rect(0,0,150,50)); R = cv::Scalar(0,0,255);}
       model.FrameReset(); failed = true;
     }     
     //draw framerate on display image 
     if(fnum >= 9){      
-      t1 = cvGetTickCount();
-      fps = 10.0/((double(t1-t0)/cvGetTickFrequency())/1e+6); 
+      t1 = cv::getTickCount();
+      fps = 10.0/((double(t1-t0)/cv::getTickFrequency())/1e+6);
       t0 = t1; fnum = 0;
     }else fnum += 1;
     if(show){
       sprintf(sss,"%d frames/sec",(int)round(fps)); text = sss;
       cv::putText(im,text,cv::Point(10,20),
-		  CV_FONT_HERSHEY_SIMPLEX,0.5,CV_RGB(255,255,255));
+      cv::FONT_HERSHEY_SIMPLEX,0.5,CV_RGB(255,255,255));
     }
     //show image and check for user input
     imshow("Face Tracker",im); 
-    int c = cvWaitKey(10);
+    int c = cv::waitKey(10);
     if(c == 27)break; else if(char(c) == 'd')model.FrameReset();
   }return 0;
 }

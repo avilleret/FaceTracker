@@ -37,62 +37,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef __Patch_h_
-#define __Patch_h_
-#include <IO.h>
+#pragma once
+#include <opencv2/core.hpp>
+#include <fstream>
 namespace FACETRACKER
 {
   //===========================================================================
   /** 
-      A Patch Expert
+      Input-output Operations
   */
-  class Patch{
+  class IO{
   public:
-    int     _t; /**< Type of patch (0=raw,1=grad,2=lbp) */
-    double  _a; /**< scaling                            */
-    double  _b; /**< bias                               */
-    cv::Mat _W; /**< Gain                               */
-    
-    Patch(){;}
-    Patch(const char* fname){this->Load(fname);}
-    Patch(int t,double a,double b,cv::Mat &W){this->Init(t,a,b,W);}
-    Patch& operator=(Patch const&rhs);
-    inline int w(){return _W.cols;}
-    inline int h(){return _W.rows;}
-    void Load(const char* fname);
-    void Save(const char* fname);
-    void Write(std::ofstream &s);
-    void Read(std::ifstream &s,bool readType = true);
-    void Init(int t, double a, double b, cv::Mat &W);
-    void Response(cv::Mat &im,cv::Mat &resp);    
-
-  private:
-    cv::Mat im_,res_;
-  };
-  //===========================================================================
-  /**
-     A Multi-patch Expert
-  */
-  class MPatch{
-  public:
-    int _w,_h;             /**< Width and height of patch */
-    std::vector<Patch> _p; /**< List of patches           */
-    
-    MPatch(){;}
-    MPatch(const char* fname){this->Load(fname);}
-    MPatch(std::vector<Patch> &p){this->Init(p);}
-    MPatch& operator=(MPatch const&rhs);
-    inline int nPatch(){return _p.size();}
-    void Load(const char* fname);
-    void Save(const char* fname);
-    void Write(std::ofstream &s);
-    void Read(std::ifstream &s,bool readType = true);
-    void Init(std::vector<Patch> &p);
-    void Response(cv::Mat &im,cv::Mat &resp);    
-
-  private:
-    cv::Mat res_;
+    enum{PDM = 0,PAW,PATCH,MPATCH,CLM,FDET,FCHECK,MFCHECK,TRACKER};
+    static void ReadMat(std::ifstream& s,cv::Mat &M);
+    static void WriteMat(std::ofstream& s,cv::Mat &M);
+    static cv::Mat LoadCon(const char* fname);
+    static cv::Mat LoadTri(const char* fname);
   };
   //===========================================================================
 }
-#endif
