@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(OpenCV 4 REQUIRED
   COMPONENTS core imgproc objdetect videoio highgui)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/lib/IO.cc
     ${CMAKE_CURRENT_LIST_DIR}/src/lib/PDM.cc
