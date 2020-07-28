@@ -74,7 +74,13 @@ void FCheck::Write(ofstream &s)
 //===========================================================================
 void FCheck::Read(ifstream &s,bool readType)
 {
-  if(readType){int type; s >> type; assert(type == IO::FCHECK);}
+  if(readType)
+  {
+    int type;
+    s >> type;
+    if(type != IO::FCHECK)
+      throw std::invalid_argument("type should be FCHECK");
+  }
   s >> _b; IO::ReadMat(s,_w); _paw.Read(s); 
   crop_.create(_paw._mask.rows,_paw._mask.cols,CV_8U);
   vec_.create(_paw._nPix,1,CV_64F); return;
@@ -123,9 +129,19 @@ void MFCheck::Write(ofstream &s)
 //===========================================================================
 void MFCheck::Read(ifstream &s,bool readType)
 {
-  if(readType){int type; s >> type; assert(type == IO::MFCHECK);}
-  int n; s >> n; _fcheck.resize(n);
-  for(int i = 0; i < n; i++)_fcheck[i].Read(s); return;
+  if(readType)
+  {
+    int type;
+    s >> type;
+    if(type != IO::MFCHECK)
+    {
+      throw invalid_argument("type should be MFCKECK");
+    }
+  }
+  int n; s >> n;
+  _fcheck.resize(n);
+  for(int i = 0; i < n; i++)_fcheck[i].Read(s);
+  return;
 }
 //===========================================================================
 bool MFCheck::Check(int idx,cv::Mat &im,cv::Mat &s)
