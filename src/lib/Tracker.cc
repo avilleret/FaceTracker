@@ -39,6 +39,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <FaceTracker/Tracker.h>
 #include <opencv2/imgproc.hpp>
+#include <stdexcept>
+#include <iostream>
 #define db at<double>
 #define TSCALE 0.3
 using namespace FACETRACKER;
@@ -57,12 +59,25 @@ void Tracker::Init(CLM &clm,FDet &fdet,MFCheck &fcheck,
 //===========================================================================
 void Tracker::Load(const char* fname)
 {
-  ifstream s(fname); assert(s.is_open()); this->Read(s); s.close(); return;
+  ifstream s(fname);
+  if(!s.is_open())
+  {
+    throw std::invalid_argument("Can't open file");
+  }
+  this->Read(s);
+  s.close();
+  return;
 }
 //===========================================================================
 void Tracker::Save(const char* fname)
 {
-  ofstream s(fname); assert(s.is_open()); this->Write(s);s.close(); return;
+  ofstream s(fname);
+  if(!s.is_open())
+  {
+    throw std::invalid_argument("file not found");
+  }
+  this->Write(s);s.close();
+  return;
 }
 //===========================================================================
 void Tracker::Write(ofstream &s)
@@ -75,7 +90,15 @@ void Tracker::Write(ofstream &s)
 //===========================================================================
 void Tracker::Read(ifstream &s,bool readType)
 {
-  if(readType){int type; s >> type; assert(type == IO::TRACKER);}
+  if(readType)
+  {
+    int type;
+    s >> type;
+    if( type != IO::TRACKER)
+    {
+      throw std::invalid_argument("wrong file type");
+    }
+  }
   _clm.Read(s); _fdet.Read(s); _fcheck.Read(s); IO::ReadMat(s,_rshape); 
   s >> _simil[0] >> _simil[1] >> _simil[2] >> _simil[3]; 
   _shape.create(2*_clm._pdm.nPoints(),1,CV_64F);
